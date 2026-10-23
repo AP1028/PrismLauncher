@@ -185,8 +185,14 @@ void Request::addValidator(Validator* v)
 void Request::executeTask()
 {
 #ifdef LAUNCHER_APPLICATION
-    m_url = applyModMirror(m_url);
-    m_url = applyMavenMirror(m_url);
+    if (!m_mirrorRewritten && !m_usedFallback) {
+        m_mirrorRewritten = true;
+        const QUrl originalUrl = m_url;
+        m_url = applyModMirror(m_url);
+        m_url = applyMavenMirror(m_url);
+        if (m_url != originalUrl && m_fallbackUrl.isEmpty())
+            m_fallbackUrl = originalUrl;
+    }
 #endif
     setStatus(tr("Requesting %1").arg(StringUtils::truncateUrlHumanFriendly(m_url, 80)));
 
@@ -422,6 +428,29 @@ void Request::handleAutoRetry(int64_t delay)
     m_retryTimer.start();
 }
 
+bool Request::tryFallback()
+{
+    if (m_usedFallback || m_fallbackUrl.isEmpty() || m_url == m_fallbackUrl)
+        return false;
+
+    qCWarning(m_logCat) << getUid().toString() << "Falling back to" << m_fallbackUrl.toString();
+    m_url = m_fallbackUrl;
+    m_fallbackUrl.clear();
+    m_usedFallback = true;
+    m_state = State::Running;
+    m_retryCount = 0;
+    m_redirectCount = 0;
+    m_errorResponse.clear();
+    m_failReason.clear();
+
+    if (m_reply)
+        m_reply.release()->deleteLater();
+    m_sink->abort();
+
+    QTimer::singleShot(0, this, &Request::executeTask);
+    return true;
+}
+
 void Request::downloadFinished()
 {
     // currently waiting for retry
@@ -445,6 +474,8 @@ void Request::downloadFinished()
         return;
     }
     if (m_state == State::Failed) {
+        if (tryFallback())
+            return;
         qCDebug(m_logCat) << getUid().toString() << "Request failed in previous step:" << m_url.toString();
         m_sink->abort();
         m_failReason = m_reply->errorString();
@@ -476,7 +507,9 @@ void Request::downloadFinished()
     // otherwise, finalize the whole graph
     auto result = m_sink->finalize(*m_reply);
     if (!result) {
-        qCDebug(m_logCat) << getUid().toString() << "Request failed to finalize:" << m_url.toString();
+        qCWarning(m_logCat) << getUid().toString() << "Request failed to finalize:" << m_url.toString() << result.error();
+        if (tryFallback())
+            return;
         m_sink->abort();
         emitFailed(result.error());
         return;

@@ -23,6 +23,7 @@
 struct AssetObject {
     QString getRelPath() const;
     QUrl getUrl() const;
+    QUrl getFallbackUrl() const;
     QString getLocalPath() const;
     Net::Request::Ptr getDownloadAction() const;
 

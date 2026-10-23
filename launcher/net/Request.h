@@ -145,6 +145,7 @@ class Request : public Task {
 
     QUrl url() const;
     void setUrl(QUrl url) { m_url = std::move(url); }
+    void setFallbackUrl(const QUrl& url) { m_fallbackUrl = url; }
     int replyStatusCode() const;
     QNetworkReply::NetworkError error() const;
     QString errorString() const;
@@ -152,6 +153,7 @@ class Request : public Task {
    private:
     auto handleRedirect() -> bool;
     void handleAutoRetry(int64_t delay);
+    bool tryFallback();
     virtual QNetworkReply* getReply(QNetworkRequest&);
 
    protected slots:
@@ -185,6 +187,9 @@ class Request : public Task {
 
     /// source URL
     QUrl m_url;
+    QUrl m_fallbackUrl;
+    bool m_mirrorRewritten = false;
+    bool m_usedFallback = false;
     std::vector<std::unique_ptr<Net::HeaderProxy>> m_headerProxies;
 
     int m_retryCount = 0;

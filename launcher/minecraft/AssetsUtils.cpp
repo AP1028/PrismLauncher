@@ -50,7 +50,9 @@
 #include "net/ChecksumValidator.h"
 
 #include "Application.h"
+#include "BuildConfig.h"
 #include "net/Request.h"
+#include "settings/SettingsObject.h"
 #include "update/AssetUpdateTask.h"
 
 namespace {
@@ -271,6 +273,9 @@ Net::Request::Ptr AssetObject::getDownloadAction() const
     QFileInfo objectFile(getLocalPath());
     if ((!objectFile.isFile()) || (objectFile.size() != size)) {
         auto objectDL = Net::ApiRequest::makeFile(getUrl(), objectFile.filePath());
+        const auto fallbackUrl = getFallbackUrl();
+        if (!fallbackUrl.isEmpty())
+            objectDL->setFallbackUrl(fallbackUrl);
         if (!hash.isEmpty()) {
             objectDL->addValidator(new Net::ChecksumValidator(QCryptographicHash::Sha1, hash));
         }
@@ -289,6 +294,15 @@ QUrl AssetObject::getUrl() const
 {
     auto resourceURL = AssetUpdateTask::resourceUrl();
     return resourceURL + getRelPath();
+}
+
+QUrl AssetObject::getFallbackUrl() const
+{
+    if (!APPLICATION->settings()->get("ResourceURLOverride").toString().isEmpty())
+        return {};
+    if (APPLICATION->settings()->get("DownloadMirrorURL").toString().isEmpty())
+        return {};
+    return QUrl(BuildConfig.DEFAULT_RESOURCE_BASE + getRelPath());
 }
 
 QString AssetObject::getRelPath() const

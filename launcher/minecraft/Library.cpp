@@ -133,6 +133,7 @@ QList<Net::Request::Ptr> Library::getDownloads(const RuntimeContext& runtimeCont
         if (local) {
             return check_local_file(storage);
         }
+        const auto sourceUrl = url;
         if (!mirrorBase.isEmpty()) {
             auto root = mirrorBase.toString(QUrl::FullyEncoded);
             if (!root.endsWith(u'/'))
@@ -159,12 +160,17 @@ QList<Net::Request::Ptr> Library::getDownloads(const RuntimeContext& runtimeCont
 
         if (sha1.size()) {
             auto dl = Net::ApiRequest::makeCached(url, entry, options);
+            if (url != sourceUrl)
+                dl->setFallbackUrl(QUrl(sourceUrl));
             dl->addValidator(new Net::ChecksumValidator(QCryptographicHash::Sha1, sha1));
             qDebug() << "Checksummed Download for:" << rawName().serialize() << "storage:" << storage << "url:" << url
                      << "expected sha1:" << sha1;
             out.append(dl);
         } else {
-            out.append(Net::ApiRequest::makeCached(url, entry, options));
+            auto dl = Net::ApiRequest::makeCached(url, entry, options);
+            if (url != sourceUrl)
+                dl->setFallbackUrl(QUrl(sourceUrl));
+            out.append(dl);
             qDebug() << "Download for:" << rawName().serialize() << "storage:" << storage << "url:" << url;
         }
         return true;
