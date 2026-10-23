@@ -169,6 +169,35 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_mirror">
+         <property name="title">
+          <string>Download Mirror</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_mirror">
+          <item>
+           <widget class="QLabel" name="label_mirror">
+            <property name="text">
+             <string>You can download Minecraft files through BMCLAPI-compatible mirror instead of the official servers.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="downloadMirrorURL">
+            <property name="placeholderText">
+             <string>https://mirror.example/</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_fmllibs">
          <property name="title">
           <string>Legacy FML Libraries Server</string>

@@ -888,6 +888,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
             // Legacy FML libs URL
             resetIfInvalid(m_settings->registerSetting("LegacyFMLLibsURLOverride", "").get());
+
+            // Download mirror
+            resetIfInvalid(m_settings->registerSetting("DownloadMirrorURL", "").get());
         }
 
         m_settings->registerSetting("MetaRefreshOnLaunch", true);

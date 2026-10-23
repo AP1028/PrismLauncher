@@ -106,9 +106,10 @@ void Library::getApplicableFiles(const RuntimeContext& runtimeContext,
  * @return QList<Net::Request::Ptr> List of download requests.
  */
 QList<Net::Request::Ptr> Library::getDownloads(const RuntimeContext& runtimeContext,
-                                                  class HttpMetaCache* cache,
-                                                  QStringList& failedLocalFiles,
-                                                  const QString& overridePath) const
+                                               class HttpMetaCache* cache,
+                                               QStringList& failedLocalFiles,
+                                               const QString& overridePath,
+                                               const QUrl& mirrorBase) const
 {
     QList<Net::Request::Ptr> out;
     bool stale = isAlwaysStale();
@@ -128,9 +129,19 @@ QList<Net::Request::Ptr> Library::getDownloads(const RuntimeContext& runtimeCont
     };
 
     // Lambda function to add a download request
-    auto add_download = [this, local, check_local_file, cache, stale, &out](QString storage, QString url, QString sha1) {
+    auto add_download = [this, local, check_local_file, cache, stale, &out, mirrorBase](QString storage, QString url, QString sha1) {
         if (local) {
             return check_local_file(storage);
+        }
+        if (!mirrorBase.isEmpty()) {
+            auto root = mirrorBase.toString(QUrl::FullyEncoded);
+            if (!root.endsWith(u'/'))
+                root += u'/';
+            url.replace("https://libraries.minecraft.net/", root + "maven/");
+            url.replace("https://maven.minecraftforge.net/", root + "maven/");
+            url.replace("https://maven.fabricmc.net/", root + "maven/");
+            url.replace("https://launcher.mojang.com/", root);
+            url.replace("https://piston-data.mojang.com/", root);
         }
         auto entry = cache->resolveEntry("libraries", storage);
         if (stale) {
@@ -149,7 +160,8 @@ QList<Net::Request::Ptr> Library::getDownloads(const RuntimeContext& runtimeCont
         if (sha1.size()) {
             auto dl = Net::ApiRequest::makeCached(url, entry, options);
             dl->addValidator(new Net::ChecksumValidator(QCryptographicHash::Sha1, sha1));
-            qDebug() << "Checksummed Download for:" << rawName().serialize() << "storage:" << storage << "url:" << url << "expected sha1:" << sha1;
+            qDebug() << "Checksummed Download for:" << rawName().serialize() << "storage:" << storage << "url:" << url
+                     << "expected sha1:" << sha1;
             out.append(dl);
         } else {
             out.append(Net::ApiRequest::makeCached(url, entry, options));

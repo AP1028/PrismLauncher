@@ -118,5 +118,13 @@ QString AssetUpdateTask::resourceUrl()
         return urlOverride;
     }
 
+    const QUrl base(APPLICATION->settings()->get("DownloadMirrorURL").toString());
+    if (base.isValid() && !base.isEmpty()) {
+        auto root = base.toString(QUrl::FullyEncoded);
+        if (!root.endsWith(u'/'))
+            root += u'/';
+        return root + "assets/";
+    }
+
     return BuildConfig.DEFAULT_RESOURCE_BASE;
 }

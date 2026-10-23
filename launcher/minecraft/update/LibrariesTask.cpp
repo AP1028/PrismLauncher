@@ -3,6 +3,8 @@
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
 
+#include <QUrl>
+
 #include "Application.h"
 
 LibrariesTask::LibrariesTask(MinecraftInstance* inst)
@@ -24,14 +26,16 @@ void LibrariesTask::executeTask()
     downloadJob.reset(job);
 
     auto metacache = APPLICATION->metacache();
+    const QUrl mirrorBase(APPLICATION->settings()->get("DownloadMirrorURL").toString());
 
-    auto processArtifactPool = [this, inst, metacache](const QList<LibraryPtr>& pool, QStringList& errors, const QString& localPath) {
+    auto processArtifactPool = [this, inst, metacache, mirrorBase](const QList<LibraryPtr>& pool, QStringList& errors,
+                                                                   const QString& localPath) {
         for (auto lib : pool) {
             if (!lib) {
                 emitFailed(tr("Null jar is specified in the metadata, aborting."));
                 return false;
             }
-            auto dls = lib->getDownloads(inst->runtimeContext(), metacache, errors, localPath);
+            auto dls = lib->getDownloads(inst->runtimeContext(), metacache, errors, localPath, mirrorBase);
             for (auto dl : dls) {
                 downloadJob->addNetAction(dl);
             }

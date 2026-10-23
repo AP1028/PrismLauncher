@@ -145,9 +145,10 @@ class Library {
 
     // Get a list of downloads for this library
     QList<Net::Request::Ptr> getDownloads(const RuntimeContext& runtimeContext,
-                                             class HttpMetaCache* cache,
-                                             QStringList& failedLocalFiles,
-                                             const QString& overridePath) const;
+                                          class HttpMetaCache* cache,
+                                          QStringList& failedLocalFiles,
+                                          const QString& overridePath,
+                                          const QUrl& mirrorBase = QUrl()) const;
 
     QString getCompatibleNative(const RuntimeContext& runtimeContext) const;
 
