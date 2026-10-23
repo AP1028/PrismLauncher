@@ -891,6 +891,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
             // Download mirror
             resetIfInvalid(m_settings->registerSetting("DownloadMirrorURL", "").get());
+
+            // Mod mirror
+            resetIfInvalid(m_settings->registerSetting("ModMirrorURL", "").get());
         }
 
         m_settings->registerSetting("MetaRefreshOnLaunch", true);

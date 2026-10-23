@@ -84,6 +84,42 @@ auto logCatForMethod(HttpMethod method) -> Request::LogCatFunc
     }
     return taskNetLogC;
 }
+
+#ifdef LAUNCHER_APPLICATION
+QUrl applyModMirror(const QUrl& url)
+{
+    const auto* app = APPLICATION_DYN;
+    if (app == nullptr)
+        return url;
+
+    const QUrl configured(app->settings()->get("ModMirrorURL").toString());
+    if (configured.isEmpty() || !configured.isValid())
+        return url;
+
+    auto base = configured.toString(QUrl::FullyEncoded);
+    while (base.endsWith(u'/'))
+        base.chop(1);
+
+    struct Rule {
+        const char* prefix;
+        const char* path;
+    };
+    static constexpr Rule rules[] = {
+        { "https://api.modrinth.com", "/modrinth" },
+        { "https://cdn.modrinth.com", "" },
+        { "https://api.curseforge.com", "/curseforge" },
+        { "https://edge.forgecdn.net", "" },
+    };
+
+    const auto raw = url.toString(QUrl::FullyEncoded);
+    for (const auto& [prefix, path] : rules) {
+        const QLatin1StringView prefixView(prefix);
+        if (raw.startsWith(prefixView))
+            return QUrl(base + QString::fromLatin1(path) + raw.sliced(prefixView.size()));
+    }
+    return url;
+}
+#endif
 }  // namespace
 
 Request::Request() : Request(Spec{}) {}
@@ -120,6 +156,9 @@ void Request::addValidator(Validator* v)
 
 void Request::executeTask()
 {
+#ifdef LAUNCHER_APPLICATION
+    m_url = applyModMirror(m_url);
+#endif
     setStatus(tr("Requesting %1").arg(StringUtils::truncateUrlHumanFriendly(m_url, 80)));
 
     if (m_network == nullptr) {

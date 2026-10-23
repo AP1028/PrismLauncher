@@ -94,7 +94,7 @@ std::pair<Task::Ptr, QByteArray*> FlameAPI::getFiles(const QStringList& fileIds)
     QJsonObject bodyObj;
     QJsonArray filesArr;
     for (const auto& fileId : fileIds) {
-        filesArr.append(fileId);
+        filesArr.append(fileId.toInt());
     }
 
     bodyObj["fileIds"] = filesArr;

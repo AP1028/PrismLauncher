@@ -198,6 +198,35 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_modmirror">
+         <property name="title">
+          <string>Mod Mirror</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_modmirror">
+          <item>
+           <widget class="QLabel" name="label_modmirror">
+            <property name="text">
+             <string>You can download Modrinth and CurseForge files through a mirror.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="modMirrorURL">
+            <property name="placeholderText">
+             <string>https://mod-mirror.example/</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_fmllibs">
          <property name="title">
           <string>Legacy FML Libraries Server</string>

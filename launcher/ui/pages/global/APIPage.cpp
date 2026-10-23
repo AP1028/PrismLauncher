@@ -79,12 +79,14 @@ APIPage::APIPage(QWidget* parent) : QWidget(parent), ui(new Ui::APIPage)
     ui->baseURLEntry->setValidator(new QRegularExpressionValidator(s_validUrlRegExp, ui->baseURLEntry));
     ui->legacyFMLLibsURL->setValidator(new QRegularExpressionValidator(s_validUrlRegExp, ui->legacyFMLLibsURL));
     ui->downloadMirrorURL->setValidator(new QRegularExpressionValidator(s_validUrlRegExp, ui->downloadMirrorURL));
+    ui->modMirrorURL->setValidator(new QRegularExpressionValidator(s_validUrlRegExp, ui->modMirrorURL));
     ui->msaClientID->setValidator(new QRegularExpressionValidator(s_validMSAClientID, ui->msaClientID));
 
     ui->metaURL->setPlaceholderText(BuildConfig.META_URL);
     ui->resourceURL->setPlaceholderText(BuildConfig.DEFAULT_RESOURCE_BASE);
     ui->legacyFMLLibsURL->setPlaceholderText(BuildConfig.LEGACY_FMLLIBS_BASE_URL);
     ui->downloadMirrorURL->setPlaceholderText("https://mirror.example/");
+    ui->modMirrorURL->setPlaceholderText("https://mod-mirror.example/");
 
     ui->userAgentLineEdit->setPlaceholderText(BuildConfig.USER_AGENT);
 
@@ -152,6 +154,7 @@ void APIPage::loadSettings()
     QString fmlLibsURL = s->get("LegacyFMLLibsURLOverride").toString();
     ui->legacyFMLLibsURL->setText(fmlLibsURL);
     ui->downloadMirrorURL->setText(s->get("DownloadMirrorURL").toString());
+    ui->modMirrorURL->setText(s->get("ModMirrorURL").toString());
     QString flameKey = s->get("FlameKeyOverride").toString();
     ui->flameKey->setText(flameKey);
     QString modrinthToken = s->get("ModrinthToken").toString();
@@ -174,6 +177,7 @@ void APIPage::applySettings()
     QUrl resourceURL(ui->resourceURL->text());
     QUrl fmlLibsURL(ui->legacyFMLLibsURL->text());
     QUrl downloadMirrorURL(ui->downloadMirrorURL->text());
+    QUrl modMirrorURL(ui->modMirrorURL->text());
 
     auto addRequiredTrailingSlash = [](QUrl& url) {
         if (!url.isEmpty() && !url.path().endsWith('/')) {
@@ -198,6 +202,7 @@ void APIPage::applySettings()
     upgradeToHTTPS(resourceURL);
     upgradeToHTTPS(fmlLibsURL);
     upgradeToHTTPS(downloadMirrorURL);
+    upgradeToHTTPS(modMirrorURL);
 
     s->set("FallbackMRBlockedMods", ui->FallbackMRBlockedMods->checkState());
     s->set("MetaURLOverride", metaURL.toString());
@@ -205,6 +210,7 @@ void APIPage::applySettings()
     s->set("ResourceURLOverride", resourceURL.toString());
     s->set("LegacyFMLLibsURLOverride", fmlLibsURL.toString());
     s->set("DownloadMirrorURL", downloadMirrorURL.toString());
+    s->set("ModMirrorURL", modMirrorURL.toString());
     QString flameKey = ui->flameKey->text();
     s->set("FlameKeyOverride", flameKey);
     QString modrinthToken = ui->modrinthToken->text();
