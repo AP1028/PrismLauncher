@@ -227,6 +227,35 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_mavenmirror">
+         <property name="title">
+          <string>Maven Mirror</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_mavenmirror">
+          <item>
+           <widget class="QLabel" name="label_mavenmirror">
+            <property name="text">
+             <string>You can download Maven artifacts through a mirror.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="mavenMirrorURL">
+            <property name="placeholderText">
+             <string>https://maven-mirror.example/</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_fmllibs">
          <property name="title">
           <string>Legacy FML Libraries Server</string>

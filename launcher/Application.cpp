@@ -894,6 +894,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
             // Mod mirror
             resetIfInvalid(m_settings->registerSetting("ModMirrorURL", "").get());
+
+            // Maven mirror
+            resetIfInvalid(m_settings->registerSetting("MavenMirrorURL", "").get());
         }
 
         m_settings->registerSetting("MetaRefreshOnLaunch", true);

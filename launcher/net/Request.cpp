@@ -86,19 +86,27 @@ auto logCatForMethod(HttpMethod method) -> Request::LogCatFunc
 }
 
 #ifdef LAUNCHER_APPLICATION
-QUrl applyModMirror(const QUrl& url)
+QString mirrorBase(const char* setting)
 {
     const auto* app = APPLICATION_DYN;
     if (app == nullptr)
-        return url;
+        return {};
 
-    const QUrl configured(app->settings()->get("ModMirrorURL").toString());
+    const QUrl configured(app->settings()->get(setting).toString());
     if (configured.isEmpty() || !configured.isValid())
-        return url;
+        return {};
 
     auto base = configured.toString(QUrl::FullyEncoded);
     while (base.endsWith(u'/'))
         base.chop(1);
+    return base;
+}
+
+QUrl applyModMirror(const QUrl& url)
+{
+    const auto base = mirrorBase("ModMirrorURL");
+    if (base.isEmpty())
+        return url;
 
     struct Rule {
         const char* prefix;
@@ -116,6 +124,26 @@ QUrl applyModMirror(const QUrl& url)
         const QLatin1StringView prefixView(prefix);
         if (raw.startsWith(prefixView))
             return QUrl(base + QString::fromLatin1(path) + raw.sliced(prefixView.size()));
+    }
+    return url;
+}
+
+QUrl applyMavenMirror(const QUrl& url)
+{
+    const auto base = mirrorBase("MavenMirrorURL");
+    if (base.isEmpty())
+        return url;
+
+    static constexpr const char* prefixes[] = {
+        "https://repo1.maven.org/maven2/",
+        "https://repo.maven.apache.org/maven2/",
+    };
+
+    const auto raw = url.toString(QUrl::FullyEncoded);
+    for (const auto* prefixChars : prefixes) {
+        const QLatin1StringView prefix(prefixChars);
+        if (raw.startsWith(prefix))
+            return QUrl(base + u'/' + raw.sliced(prefix.size()));
     }
     return url;
 }
@@ -158,6 +186,7 @@ void Request::executeTask()
 {
 #ifdef LAUNCHER_APPLICATION
     m_url = applyModMirror(m_url);
+    m_url = applyMavenMirror(m_url);
 #endif
     setStatus(tr("Requesting %1").arg(StringUtils::truncateUrlHumanFriendly(m_url, 80)));
 
